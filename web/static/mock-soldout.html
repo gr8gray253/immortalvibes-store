@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Condemned Planet — Mock v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #07070f;
+    font-family: 'Share Tech Mono', monospace;
+    color: #F0EDE6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3.5rem;
+    padding: 3rem 2rem;
+  }
+
+  h1 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: rgba(240,237,230,0.2);
+    text-transform: uppercase;
+  }
+
+  .row {
+    display: flex;
+    gap: 6rem;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ── Card ── */
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .tag {
+    font-size: 0.48rem;
+    letter-spacing: 0.22em;
+    padding: 0.2rem 0.7rem;
+    border: 1px solid rgba(240,237,230,0.1);
+    color: rgba(240,237,230,0.25);
+    text-transform: uppercase;
+  }
+
+  .mission-num {
+    font-size: 0.52rem;
+    letter-spacing: 0.22em;
+    color: rgba(240,237,230,0.4);
+  }
+
+  .product-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: #F0EDE6;
+    text-align: center;
+  }
+
+  .price { font-size: 0.65rem; letter-spacing: 0.12em; color: #C8922A; }
+
+  /* ── Planet wrap — ring lives here ── */
+  .planet-wrap {
+    position: relative;
+    width: 140px;
+    height: 140px;
+  }
+
+  /* ── Planet shell — clips everything inside to a circle ── */
+  .planet-shell {
+    position: absolute;
+    inset: 10px; /* inset so ring doesn't clip */
+    border-radius: 50%;
+    overflow: hidden;
+  }
+
+  /* ── Available planet ── */
+  .planet-bg {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 38% 32%,
+      #d4e4f4 0%, #8ab4d4 25%, #4a7aaa 55%, #1a3456 85%, #0d1f38 100%);
+    box-shadow: inset -18px -10px 28px rgba(0,0,20,0.6);
+  }
+
+  /* ── Condemned planet ── */
+  .planet-bg--condemned {
+    filter: grayscale(1) brightness(0.3);
+  }
+
+  /* ── Scan lines overlay ── */
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 3px,
+      rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px
+    );
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* ── Red danger atmosphere (inside the shell) ── */
+  .danger-atmo {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%,
+      transparent 40%, rgba(160, 30, 30, 0.22) 100%);
+    pointer-events: none;
+  }
+
+  /* ── Caution tape ── */
+  .tape {
+    position: absolute;
+    width: 230%;
+    height: 14px;
+    left: -65%;
+    transform-origin: center center;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(14,14,0,0.72) 0px,  rgba(14,14,0,0.72) 14px,
+      rgba(200,146,42,0.65) 14px, rgba(200,146,42,0.65) 28px
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    mix-blend-mode: normal;
+  }
+
+  .tape-1 { top: calc(50% - 10px); transform: rotate(-33deg); }
+  .tape-2 { top: calc(50% - 10px); transform: rotate(33deg); }
+
+  /* "CONDEMNED" text floats centered on the X intersection */
+  .tape-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-33deg);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.42rem;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    color: rgba(14,14,0,0.85);
+    background: rgba(200,146,42,0.75);
+    padding: 0.1rem 0.5rem;
+    white-space: nowrap;
+    z-index: 10;
+    text-transform: uppercase;
+  }
+
+  /* ── Blinking alert dot (top-right of planet) ── */
+  .alert-dot {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #cc2222;
+    box-shadow: 0 0 8px rgba(200,30,30,0.9);
+    z-index: 20;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.1; }
+  }
+
+  /* ── Red orbital ring (outside the shell) ── */
+  .ring-outer {
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    border: 1px solid rgba(190, 45, 45, 0.55);
+    box-shadow:
+      0 0 10px rgba(190,45,45,0.3),
+      0 0 22px rgba(190,45,45,0.12),
+      inset 0 0 10px rgba(190,45,45,0.08);
+    animation: flicker 2.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .ring-inner {
+    position: absolute;
+    inset: 7px;
+    border-radius: 50%;
+    border: 1px solid rgba(190, 45, 45, 0.2);
+    animation: flicker 2.6s ease-in-out infinite reverse;
+    pointer-events: none;
+  }
+
+  @keyframes flicker {
+    0%, 100% { opacity: 0.4; }
+    30%       { opacity: 1; }
+    65%       { opacity: 0.6; }
+    80%       { opacity: 0.9; }
+  }
+
+  /* ── Below-planet status ── */
+  .status-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .condemned-badge {
+    font-size: 0.52rem;
+    letter-spacing: 0.28em;
+    color: rgba(190, 45, 45, 0.7);
+    border: 1px solid rgba(190, 45, 45, 0.3);
+    padding: 0.25rem 0.9rem;
+    text-transform: uppercase;
+    position: relative;
+  }
+
+  /* corner tick marks on the badge */
+  .condemned-badge::before,
+  .condemned-badge::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+  }
+  .condemned-badge::before {
+    top: -1px; left: -1px;
+    border-top: 1px solid rgba(190,45,45,0.6);
+    border-left: 1px solid rgba(190,45,45,0.6);
+  }
+  .condemned-badge::after {
+    bottom: -1px; right: -1px;
+    border-bottom: 1px solid rgba(190,45,45,0.6);
+    border-right: 1px solid rgba(190,45,45,0.6);
+  }
+
+  .mission-terminated {
+    font-size: 0.42rem;
+    letter-spacing: 0.2em;
+    color: rgba(240,237,230,0.2);
+    text-transform: uppercase;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    width: 1px;
+    height: 220px;
+    background: linear-gradient(to bottom,
+      transparent, rgba(240,237,230,0.07) 30%, rgba(240,237,230,0.07) 70%, transparent);
+    align-self: center;
+  }
+
+  /* dim text under condemned */
+  .dim { color: rgba(240,237,230,0.25) !important; }
+</style>
+</head>
+<body>
+
+<h1>Condemned Planet — Detail Pass</h1>
+
+<div class="row">
+
+  <!-- Reference -->
+  <div class="card">
+    <div class="tag">Available — Reference</div>
+    <div class="planet-wrap">
+      <div class="planet-shell">
+        <div class="planet-bg"></div>
+      </div>
+    </div>
+    <div class="mission-num">Mission 002</div>
+    <div class="product-name">Vanguard Trucker Hat</div>
+    <div class="price">$20</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Condemned -->
+  <div class="card">
+    <div class="tag" style="border-color:rgba(190,45,45,0.3);color:rgba(190,45,45,0.55);">Condemned</div>
+
+    <div class="planet-wrap">
+      <!-- Orbital rings — outside the clipped shell -->
+      <div class="ring-outer"></div>
+      <div class="ring-inner"></div>
+
+      <!-- Alert dot -->
+      <div class="alert-dot"></div>
+
+      <!-- Planet shell — clips tape + planet to circle -->
+      <div class="planet-shell">
+        <div class="planet-bg planet-bg--condemned"></div>
+        <div class="danger-atmo"></div>
+        <div class="scanlines"></div>
+        <!-- X tape bands -->
+        <div class="tape tape-1"></div>
+        <div class="tape tape-2"></div>
+        <!-- CONDEMNED stamp on intersection -->
+        <div class="tape-text">CONDEMNED</div>
+      </div>
+    </div>
+
+    <div class="mission-num dim">Mission 002</div>
+    <div class="product-name dim">Vanguard Trucker Hat</div>
+    <div class="status-block">
+      <div class="condemned-badge">Condemned</div>
+      <div class="mission-terminated">Mission Terminated</div>
+    </div>
+  </div>
+
+</div>
+
+<p style="font-size:0.48rem;letter-spacing:0.15em;color:rgba(240,237,230,0.12);margin-top:0.5rem;">
+  Open in browser — ring flickers, alert dot blinks
+</p>
+
+</body>
+</html>
